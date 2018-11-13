@@ -6,7 +6,6 @@
 //                   Realtime face detection using OpenCV with Java
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 package aps;
 
 import java.awt.Graphics;
@@ -15,6 +14,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import javax.imageio.ImageIO;
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfRect;
@@ -32,13 +32,30 @@ import org.opencv.videoio.VideoCapture;
  */
 public class FaceDetection extends javax.swing.JFrame {
 ///
+
     private DaemonThread myThread = null;
     int count = 0;
     VideoCapture webSource = null;
     Mat frame = new Mat();
+    Mat frame2 = new Mat();
     MatOfByte mem = new MatOfByte();
     CascadeClassifier faceDetector = new CascadeClassifier(FaceDetection.class.getResource("haarcascade_frontalface_alt.xml").getPath().substring(1));
     MatOfRect faceDetections = new MatOfRect();
+    Mat mask_dy = new Mat(3, 3, CvType.CV_32F) {
+        {
+            put(0, 0, 1);
+            put(0, 1, 2);
+            put(0, 2, 1);
+
+            put(1, 0, 0);
+            put(1, 1, 0);
+            put(1, 2, 0);
+
+            put(2, 0, -1);
+            put(2, 1, -2);
+            put(2, 2, -1);
+        }
+    };
 ///    
 
     class DaemonThread implements Runnable {
@@ -55,20 +72,22 @@ public class FaceDetection extends javax.swing.JFrame {
                             Graphics g = jPanel1.getGraphics();
                             faceDetector.detectMultiScale(frame, faceDetections);
                             for (Rect rect : faceDetections.toArray()) {
-                               // System.out.println("ttt");
+                                // System.out.println("ttt");
                                 Imgproc.rectangle(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
-                                        new Scalar(180, 105,255));
-//                                Imgproc.arrowedLine(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(180, 105,255));
-                                
-                            
-                           // Imgproc.putText(frame, "Um viado detectado", new Point(rect.x, rect.y - 10
-                             //   ),NORMAL, 0.8, new Scalar(180, 105,255 ));
+                                        new Scalar(180, 105, 255));
+                                Imgproc.arrowedLine(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(180, 105, 255));
+                                frame2=faceDetections.convertTo(frame,1,1,1);
+                                // Imgproc.putText(frame, "Um viado detectado", new Point(rect.x, rect.y - 10
+                                //   ),NORMAL, 0.8, new Scalar(180, 105,255 ));
                             }
-                           
+                            
+                            Imgproc.filter2D(frame, frame, -200, mask_dy);
+                            
+                            
                             Imgcodecs.imencode(".bmp", frame, mem);
                             Image im = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
                             BufferedImage buff = (BufferedImage) im;
-                            if (g.drawImage(buff, 0, 0, getWidth(), getHeight()-150 , 0, 0, buff.getWidth(), buff.getHeight(), null)) {
+                            if (g.drawImage(buff, 0, 0, getWidth(), getHeight() - 150, 0, 0, buff.getWidth(), buff.getHeight(), null)) {
                                 if (runnable == false) {
                                     System.out.println("Paused ..... ");
                                     this.wait();
