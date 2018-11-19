@@ -16,12 +16,7 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
 import org.opencv.videoio.VideoCapture;
 
-/**
- *
- * @author Taha Emara
- */
 public class FaceDetection extends javax.swing.JFrame {
-///
 
     private DaemonThread myThread = null;
     int count = 0;
