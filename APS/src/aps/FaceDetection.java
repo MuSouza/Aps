@@ -1,11 +1,3 @@
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Author: Taha Emara
-// WebSite : www.Emaraic.com
-// E-mail  : taha@emaraic.com
-//
-//                   Realtime face detection using OpenCV with Java
-//
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 package aps;
 
 import java.awt.Graphics;
@@ -18,9 +10,7 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfRect;
-import org.opencv.core.Point;
 import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
@@ -35,12 +25,13 @@ public class FaceDetection extends javax.swing.JFrame {
 
     private DaemonThread myThread = null;
     int count = 0;
-    VideoCapture webSource = null;
+    VideoCapture camSource = null;
     Mat frame = new Mat();
     Mat frame2 = new Mat();
+    Mat face = new Mat();
     MatOfByte mem = new MatOfByte();
     CascadeClassifier faceDetector = new CascadeClassifier(FaceDetection.class.getResource("haarcascade_frontalface_alt.xml").getPath().substring(1));
-    MatOfRect faceDetections = new MatOfRect();
+    MatOfRect faces = new MatOfRect();
     Mat mask_dy = new Mat(3, 3, CvType.CV_32F) {
         {
             put(0, 0, 1);
@@ -61,30 +52,36 @@ public class FaceDetection extends javax.swing.JFrame {
     class DaemonThread implements Runnable {
 
         protected volatile boolean runnable = false;
-
+        double t=200;
         @Override
         public void run() {
             synchronized (this) {
                 while (runnable) {
-                    if (webSource.grab()) {
+                    if (camSource.grab()) {
                         try {
-                            webSource.retrieve(frame);
+                            camSource.retrieve(frame);
                             Graphics g = jPanel1.getGraphics();
-                            faceDetector.detectMultiScale(frame, faceDetections);
-                            for (Rect rect : faceDetections.toArray()) {
-                                // System.out.println("ttt");
-                                Imgproc.rectangle(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
-                                        new Scalar(180, 105, 255));
-                                Imgproc.arrowedLine(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(180, 105, 255));
-                                frame2=faceDetections.convertTo(frame,1,1,1);
+                           
+                            //faceDetector.detectMultiScale(frame, faces,1.2,2,0, new Size(30, 30), new Size(500, 500));
+                            faceDetector.detectMultiScale(frame, faces);
+                            
+                            for (Rect rect :faces.toArray()) {
+                                   
+                                System.out.println(rect.size());
+                                //Imgproc.rectangle(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
+                                //        new Scalar(180, 105, 255));
+                                //Imgproc.ellipse(frame, new Point(rect.x + rect.width / 2, rect.y + rect.height / 2), new Size(rect.width / 2.5, rect.height / 2), 0, 0, 360,
+                                 //       new Scalar(255, 0, 255), 3);
+                                //Imgproc.arrowedLine(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(180, 105, 255));
+                                // frame2=faceDetections.convertTo(frame,1,1,1);
                                 // Imgproc.putText(frame, "Um viado detectado", new Point(rect.x, rect.y - 10
                                 //   ),NORMAL, 0.8, new Scalar(180, 105,255 ));
+                                frame2 = frame;
+                                face = frame2.submat(rect);
+                                Imgproc.filter2D(face, face, -200, mask_dy);
                             }
-                            
-                            Imgproc.filter2D(frame, frame, -200, mask_dy);
-                            
-                            
-                            Imgcodecs.imencode(".bmp", frame, mem);
+
+                            Imgcodecs.imencode(".bmp", frame2, mem);
                             Image im = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
                             BufferedImage buff = (BufferedImage) im;
                             if (g.drawImage(buff, 0, 0, getWidth(), getHeight() - 150, 0, 0, buff.getWidth(), buff.getHeight(), null)) {
@@ -103,10 +100,7 @@ public class FaceDetection extends javax.swing.JFrame {
         }
     }
 
-/////////
-    /**
-     * Creates new form FaceDetection
-     */
+
     public FaceDetection() {
         initComponents();
         System.out.println(FaceDetection.class.getResource("haarcascade_frontalface_alt.xml").getPath().substring(1));
@@ -135,7 +129,7 @@ public class FaceDetection extends javax.swing.JFrame {
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 376, Short.MAX_VALUE)
+            .addGap(0, 394, Short.MAX_VALUE)
         );
 
         jButton1.setText("Start");
@@ -157,25 +151,25 @@ public class FaceDetection extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(24, 24, 24)
+                .addGap(222, 222, 222)
+                .addComponent(jButton1)
+                .addGap(122, 122, 122)
+                .addComponent(jButton2)
+                .addContainerGap(352, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addGap(255, 255, 255)
-                .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(86, 86, 86)
-                .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(258, 258, 258))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(11, 11, 11)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jButton1)
+                    .addComponent(jButton2))
                 .addContainerGap())
         );
 
@@ -187,14 +181,14 @@ public class FaceDetection extends javax.swing.JFrame {
         jButton2.setEnabled(false);   // activate start button 
         jButton1.setEnabled(true);     // deactivate stop button
 
-        webSource.release();  // stop caturing fron cam
+        camSource.release();  // stop caturing fron cam
 
 
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
 
-        webSource = new VideoCapture(0); // video capture from default cam
+        camSource = new VideoCapture(0); // video capture from default cam
         myThread = new DaemonThread(); //create object of threat class
         Thread t = new Thread(myThread);
         t.setDaemon(true);
