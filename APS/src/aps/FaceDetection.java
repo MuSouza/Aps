@@ -56,13 +56,13 @@ public class FaceDetection extends javax.swing.JFrame {
                         try {
                             camSource.retrieve(frame);
                             Graphics g = jPanel1.getGraphics();
-                           
+                           //metodo para reconhecer a face
                             //faceDetector.detectMultiScale(frame, faces,1.2,2,0, new Size(30, 30), new Size(500, 500));
                             faceDetector.detectMultiScale(frame, faces);
-                            
+                            //segmentação das multiplas faces
                             for (Rect rect :faces.toArray()) {
-                                   
-                                System.out.println(rect.size());
+                                //codigos de teste 
+                                //System.out.println(rect.size());
                                 //Imgproc.rectangle(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
                                 //        new Scalar(180, 105, 255));
                                 //Imgproc.ellipse(frame, new Point(rect.x + rect.width / 2, rect.y + rect.height / 2), new Size(rect.width / 2.5, rect.height / 2), 0, 0, 360,
@@ -71,15 +71,18 @@ public class FaceDetection extends javax.swing.JFrame {
                                 // frame2=faceDetections.convertTo(frame,1,1,1);
                                 // Imgproc.putText(frame, "Um viado detectado", new Point(rect.x, rect.y - 10
                                 //   ),NORMAL, 0.8, new Scalar(180, 105,255 ));
+                                
+                                //aplicar os filtros na face
                                 frame2 = frame;
                                 face = frame2.submat(rect);
                                 Imgproc.filter2D(face, face, -200, mask_dy);
                             }
-
+                            
                             Imgcodecs.imencode(".bmp", frame2, mem);
                             Image im = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
                             BufferedImage buff = (BufferedImage) im;
-                            if (g.drawImage(buff, 0, 0, getWidth(), getHeight() - 150, 0, 0, buff.getWidth(), buff.getHeight(), null)) {
+                            //codigo para colocar a imagem no panel
+                            if (g.drawImage(buff, 0, 0, jPanel1.getWidth(), jPanel1.getHeight(), 0, 0, buff.getWidth(), buff.getHeight(), null)) {
                                 if (runnable == false) {
                                     System.out.println("Paused ..... ");
                                     this.wait();
@@ -116,15 +119,17 @@ public class FaceDetection extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
+        jPanel1.setNextFocusableComponent(jPanel1);
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGap(0, 794, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 394, Short.MAX_VALUE)
+            .addGap(0, 399, Short.MAX_VALUE)
         );
 
         jButton1.setText("Start");
@@ -146,51 +151,50 @@ public class FaceDetection extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(222, 222, 222)
-                .addComponent(jButton1)
-                .addGap(122, 122, 122)
-                .addComponent(jButton2)
-                .addContainerGap(352, Short.MAX_VALUE))
+                .addGap(220, 220, 220)
+                .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(133, 133, 133)
+                .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(343, 343, 343))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(11, 11, 11)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1)
-                    .addComponent(jButton2))
-                .addContainerGap())
+                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 34, Short.MAX_VALUE)
+                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        myThread.runnable = false;            // stop thread
-        jButton2.setEnabled(false);   // activate start button 
-        jButton1.setEnabled(true);     // deactivate stop button
+        myThread.runnable = false;            // parar a thread
+        jButton2.setEnabled(false);   // ativar  start button 
+        jButton1.setEnabled(true);     // desativar  stop button
 
-        camSource.release();  // stop caturing fron cam
+        camSource.release();  // parar a captura da cam
 
 
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-
-        camSource = new VideoCapture(0); // video capture from default cam
-        myThread = new DaemonThread(); //create object of threat class
+        //inicia a cam e a thread
+        camSource = new VideoCapture(0); 
+        myThread = new DaemonThread(); 
         Thread t = new Thread(myThread);
         t.setDaemon(true);
         myThread.runnable = true;
-        t.start();                 //start thrad
-        jButton1.setEnabled(false);  // deactivate start button
-        jButton2.setEnabled(true);  //  activate stop button
+        t.start();                 
+        jButton1.setEnabled(false);  
+        jButton2.setEnabled(true);  
 
 
     }//GEN-LAST:event_jButton1ActionPerformed
