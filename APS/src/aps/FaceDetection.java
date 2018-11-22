@@ -13,7 +13,6 @@ import org.opencv.core.MatOfRect;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
-import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
@@ -22,16 +21,19 @@ import org.opencv.videoio.VideoCapture;
 public class FaceDetection extends javax.swing.JFrame {
 
     private DaemonThread myThread = null;
-    private boolean filtroRosto = false;
-    private boolean filterGrey = false;
+    private boolean filtroFcGausiano = false;//filtro que embaça a cara
+    private boolean filtroFc=false;
+    private boolean filtroImgCinza = false;
     int count = 0;
     VideoCapture camSource = null;
     Mat frame = new Mat();
     Mat frame2 = new Mat();
     Mat face = new Mat();
+    Mat face2 = new Mat();
     MatOfByte mem = new MatOfByte();
     CascadeClassifier faceDetector = new CascadeClassifier(FaceDetection.class.getResource("haarcascade_frontalface_alt.xml").getPath().substring(1));
     MatOfRect faces = new MatOfRect();
+        private boolean filtroFcMascW=false;
     Mat mask_dy = new Mat(3, 3, CvType.CV_32F) {
         {
             put(0, 0, 1);
@@ -49,17 +51,17 @@ public class FaceDetection extends javax.swing.JFrame {
     };
     Mat maskFullWhite = new Mat(3, 3, CvType.CV_32F) {
             {
-                put(0, 0, 255);
-                put(0, 1, 255);
-                put(0, 2, 255);
+                put(0, 0, 25);
+                put(0, 1, 25);
+                put(0, 2, 25);
 
-                put(1, 0, 255);
-                put(1, 1, 255);
-                put(1, 2, 255);
+                put(1, 0, 25);
+                put(1, 1, 25);
+                put(1, 2, 25);
 
-                put(2, 0, 255);
-                put(2, 1, 255);
-                put(2, 2, 255);
+                put(2, 0, 25);
+                put(2, 1, 25);
+                put(2, 2, 25);
             }
         };
 
@@ -76,14 +78,14 @@ public class FaceDetection extends javax.swing.JFrame {
                             camSource.retrieve(frame);
                             Graphics g = jPanel1.getGraphics();
                            //metodo para reconhecer a face
-                            faceDetector.detectMultiScale(frame, faces,1.2,2,0, new Size(30, 30), new Size(500, 500));
-                            //faceDetector.detectMultiScale(frame, faces);
+                            //faceDetector.detectMultiScale(frame, faces,1.2,2,0, new Size(30, 30), new Size(500, 500));
+                            faceDetector.detectMultiScale(frame, faces);
                             //segmentação das multiplas faces
                             for (Rect rect :faces.toArray()) {
                                 //codigos de teste 
                                 //System.out.println(rect.size());
-                                //Imgproc.rectangle(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
-                                  //      new Scalar(180, 105, 255));
+                               Imgproc.rectangle(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
+                                       new Scalar(180, 105, 255));
 //                                Imgproc.ellipse(frame, new Point(rect.x + rect.width / 2, rect.y + rect.height / 2), new Size(rect.width / 2.5, rect.height / 2), 0, 0, 360,
 //                                      new Scalar(255, 0, 255), 3);
                                 //Imgproc.arrowedLine(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(180, 105, 255));
@@ -94,17 +96,22 @@ public class FaceDetection extends javax.swing.JFrame {
                                 //aplicar os filtros na face
                                 frame2 = frame;
                                 face = frame2.submat(rect);
+                                face2=face;
                                 
-                                if (filtroRosto) {
+                                if (filtroFcGausiano) {
+                                  Imgproc.GaussianBlur (face, face2,face2.size(), 10);
+                                }
+                                if(filtroFcMascW){
                                     Imgproc.filter2D(face, face, -200, maskFullWhite);
                                 }
                                 
                             }
                                 //Imgproc.filter2D(frame, frame, -200, mask_dy);
                                 
-                                if (filterGrey) {
+                                if (filtroImgCinza) {
                                     Imgproc.cvtColor(frame, frame, Imgproc.COLOR_RGB2GRAY);
                                 }
+                                //Imgproc.Canny(frame, frame, 1, lowThresh * RATIO, KERNEL_SIZE, false);
                             
                             Imgcodecs.imencode(".bmp", frame2, mem);
                             Image im = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
@@ -151,8 +158,14 @@ public class FaceDetection extends javax.swing.JFrame {
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
+        jPanel2 = new javax.swing.JPanel();
         jButton4 = new javax.swing.JButton();
+        jButton6 = new javax.swing.JButton();
+        jButton8 = new javax.swing.JButton();
+        jPanel3 = new javax.swing.JPanel();
         jButton5 = new javax.swing.JButton();
+        jButton7 = new javax.swing.JButton();
+        jButton9 = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenu2 = new javax.swing.JMenu();
@@ -166,7 +179,7 @@ public class FaceDetection extends javax.swing.JFrame {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 794, Short.MAX_VALUE)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -194,12 +207,48 @@ public class FaceDetection extends javax.swing.JFrame {
             }
         });
 
-        jButton4.setText("Esconder Rosto");
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Filtros Face"));
+
+        jButton4.setText("Filtro Gaussiano");
         jButton4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton4ActionPerformed(evt);
             }
         });
+
+        jButton6.setText("Esconde Rosto");
+        jButton6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton6ActionPerformed(evt);
+            }
+        });
+
+        jButton8.setText("jButton8");
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addComponent(jButton4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jButton6)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jButton8)
+                .addGap(0, 0, Short.MAX_VALUE))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton4)
+                    .addComponent(jButton6)
+                    .addComponent(jButton8))
+                .addContainerGap())
+        );
+
+        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Filtros Imagem"));
 
         jButton5.setText("Escala de Cinza");
         jButton5.addActionListener(new java.awt.event.ActionListener() {
@@ -207,6 +256,33 @@ public class FaceDetection extends javax.swing.JFrame {
                 jButton5ActionPerformed(evt);
             }
         });
+
+        jButton7.setText("Canny");
+
+        jButton9.setText("jButton9");
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addComponent(jButton5)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton7)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jButton9)
+                .addGap(0, 0, Short.MAX_VALUE))
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton5)
+                    .addComponent(jButton7)
+                    .addComponent(jButton9))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
 
         jMenu1.setText("Começar");
         jMenu1.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -236,36 +312,40 @@ public class FaceDetection extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addGap(20, 20, 20)
+                .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jButton3)
+                .addGap(651, 651, 651))
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(10, 10, 10)
-                        .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jButton3)
-                        .addGap(18, 18, 18)
-                        .addComponent(jButton4)
-                        .addGap(18, 18, 18)
-                        .addComponent(jButton5)
-                        .addGap(401, 401, 401))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(17, 17, 17)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1)
                     .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton3)
-                    .addComponent(jButton4)
-                    .addComponent(jButton5)))
+                    .addComponent(jButton3))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(30, 30, 30))
         );
 
         pack();
@@ -296,16 +376,17 @@ public class FaceDetection extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        this.filtroRosto = false;
-        this.filterGrey = false;
+        this.filtroFcGausiano = false;
+        this.filtroImgCinza = false;
+        this.filtroFcMascW=false;
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
-        this.filtroRosto = !filtroRosto;
+        this.filtroFcGausiano = !filtroFcGausiano;
     }//GEN-LAST:event_jButton4ActionPerformed
 
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
-        this.filterGrey = !filterGrey;
+        this.filtroImgCinza = !filtroImgCinza;
     }//GEN-LAST:event_jButton5ActionPerformed
 
     private void jMenu1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenu1ActionPerformed
@@ -338,6 +419,10 @@ public class FaceDetection extends javax.swing.JFrame {
         jButton1.setEnabled(false);  
         jButton2.setEnabled(true);
     }//GEN-LAST:event_jMenu1MouseClicked
+
+    private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
+        this.filtroFcMascW=!filtroFcMascW;
+    }//GEN-LAST:event_jButton6ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -380,9 +465,15 @@ public class FaceDetection extends javax.swing.JFrame {
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
     private javax.swing.JButton jButton5;
+    private javax.swing.JButton jButton6;
+    private javax.swing.JButton jButton7;
+    private javax.swing.JButton jButton8;
+    private javax.swing.JButton jButton9;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     // End of variables declaration//GEN-END:variables
 }
