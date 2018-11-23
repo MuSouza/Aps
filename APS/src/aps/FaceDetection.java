@@ -13,6 +13,7 @@ import org.opencv.core.MatOfRect;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
@@ -26,6 +27,8 @@ public class FaceDetection extends javax.swing.JFrame {
     private boolean filtroImgCanny=false;
     private boolean filtroImgCinza = false;
     int count = 0;
+    private static final int KERNEL_SIZE = 3;
+    private static final Size BLUR_SIZE = new Size(3,3);
     VideoCapture camSource = null;
     Mat frame = new Mat();
     Mat frame2 ;
@@ -70,6 +73,7 @@ public class FaceDetection extends javax.swing.JFrame {
 
         protected volatile boolean runnable = false;
         double t=200;
+        private Mat detectedEdges = new Mat();
         @Override
         public void run() {
             synchronized (this) {
@@ -117,9 +121,14 @@ public class FaceDetection extends javax.swing.JFrame {
                                     Imgproc.cvtColor(frame, frame, Imgproc.COLOR_RGB2GRAY);
                                 }
                                 if(filtroImgCanny){
-                                Imgproc.Canny(frame, frame2, 1, 1, 5, false);
+                                Imgproc.blur(frame, frame2, BLUR_SIZE);
+                                Imgproc.Canny(frame2, detectedEdges, 2, 1, KERNEL_SIZE, false);
+                                Imgcodecs.imencode(".bmp", detectedEdges, mem);
+                                
                                 }
-                            Imgcodecs.imencode(".bmp", frame2, mem);
+                            if(!filtroImgCanny){
+                            Imgcodecs.imencode(".bmp", frame, mem);
+                            }
                             Image im = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
                             BufferedImage buff = (BufferedImage) im;
                             //codigo para colocar a imagem no panel
