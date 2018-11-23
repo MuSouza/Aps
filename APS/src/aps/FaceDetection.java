@@ -23,13 +23,14 @@ public class FaceDetection extends javax.swing.JFrame {
     private DaemonThread myThread = null;
     private boolean filtroFcGausiano = false;//filtro que embaça a cara
     private boolean filtroFc=false;
+    private boolean filtroImgCanny=false;
     private boolean filtroImgCinza = false;
     int count = 0;
     VideoCapture camSource = null;
     Mat frame = new Mat();
-    Mat frame2 = new Mat();
-    Mat face = new Mat();
-    Mat face2 = new Mat();
+    Mat frame2 ;
+    Mat face;
+    Mat face2;
     MatOfByte mem = new MatOfByte();
     CascadeClassifier faceDetector = new CascadeClassifier(FaceDetection.class.getResource("haarcascade_frontalface_alt.xml").getPath().substring(1));
     MatOfRect faces = new MatOfRect();
@@ -84,8 +85,8 @@ public class FaceDetection extends javax.swing.JFrame {
                             for (Rect rect :faces.toArray()) {
                                 //codigos de teste 
                                 //System.out.println(rect.size());
-                               Imgproc.rectangle(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
-                                       new Scalar(180, 105, 255));
+                               //Imgproc.rectangle(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
+                                     //  new Scalar(180, 105, 255));
 //                                Imgproc.ellipse(frame, new Point(rect.x + rect.width / 2, rect.y + rect.height / 2), new Size(rect.width / 2.5, rect.height / 2), 0, 0, 360,
 //                                      new Scalar(255, 0, 255), 3);
                                 //Imgproc.arrowedLine(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(180, 105, 255));
@@ -93,13 +94,17 @@ public class FaceDetection extends javax.swing.JFrame {
                                 // Imgproc.putText(frame, "Um viado detectado", new Point(rect.x, rect.y - 10
                                 //   ),NORMAL, 0.8, new Scalar(180, 105,255 ));
                                 
-                                //aplicar os filtros na face
+                                frame2 = new Mat();
+                                face= new Mat();
+                                face2= new Mat();
+                                
                                 frame2 = frame;
                                 face = frame2.submat(rect);
                                 face2=face;
+                                //aplicar os filtros na face
                                 
                                 if (filtroFcGausiano) {
-                                  Imgproc.GaussianBlur (face, face2,face2.size(), 10);
+                                  Imgproc.GaussianBlur (face, face2,face.size(), 10);
                                 }
                                 if(filtroFcMascW){
                                     Imgproc.filter2D(face, face, -200, maskFullWhite);
@@ -111,8 +116,9 @@ public class FaceDetection extends javax.swing.JFrame {
                                 if (filtroImgCinza) {
                                     Imgproc.cvtColor(frame, frame, Imgproc.COLOR_RGB2GRAY);
                                 }
-                                //Imgproc.Canny(frame, frame, 1, lowThresh * RATIO, KERNEL_SIZE, false);
-                            
+                                if(filtroImgCanny){
+                                Imgproc.Canny(frame, frame2, 1, 1, 5, false);
+                                }
                             Imgcodecs.imencode(".bmp", frame2, mem);
                             Image im = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
                             BufferedImage buff = (BufferedImage) im;
@@ -258,6 +264,11 @@ public class FaceDetection extends javax.swing.JFrame {
         });
 
         jButton7.setText("Canny");
+        jButton7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton7ActionPerformed(evt);
+            }
+        });
 
         jButton9.setText("jButton9");
 
@@ -423,6 +434,10 @@ public class FaceDetection extends javax.swing.JFrame {
     private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
         this.filtroFcMascW=!filtroFcMascW;
     }//GEN-LAST:event_jButton6ActionPerformed
+
+    private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
+        this.filtroImgCanny=!filtroImgCanny;
+    }//GEN-LAST:event_jButton7ActionPerformed
 
     /**
      * @param args the command line arguments
