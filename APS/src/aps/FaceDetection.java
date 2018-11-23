@@ -55,17 +55,17 @@ public class FaceDetection extends javax.swing.JFrame {
     };
     Mat maskFullWhite = new Mat(3, 3, CvType.CV_32F) {
             {
-                put(0, 0, 25);
-                put(0, 1, 25);
-                put(0, 2, 25);
+                put(0, 0, 0);
+                put(0, 1, 0);
+                put(0, 2, 0);
 
-                put(1, 0, 25);
-                put(1, 1, 25);
-                put(1, 2, 25);
+                put(1, 0, 0);
+                put(1, 1, 0);
+                put(1, 2, 0);
 
-                put(2, 0, 25);
-                put(2, 1, 25);
-                put(2, 2, 25);
+                put(2, 0, 0);
+                put(2, 1, 0);
+                put(2, 2, 0);
             }
         };
 
@@ -108,7 +108,7 @@ public class FaceDetection extends javax.swing.JFrame {
                                 //aplicar os filtros na face
                                 
                                 if (filtroFcGausiano) {
-                                  Imgproc.GaussianBlur (face, face2,face.size(), 10);
+                                  Imgproc.GaussianBlur (face, face2,new Size(35,35), t, t);
                                 }
                                 if(filtroFcMascW){
                                     Imgproc.filter2D(face, face, -200, maskFullWhite);
